@@ -34,14 +34,32 @@ import time
 import jinja2
 import requests
 import json
+import psutil
 
 indir = "lovelace"
-infile = "main.yaml"
 secretsfile = "secrets.yaml"
-
 outfile = "ui-lovelace.yaml"
-
 wwwdir = "www"
+
+if os.path.isfile("/.dockerenv"):
+    #This is a docker instance
+    #Config is probably in /config but it's worth checking
+    for process in psutil.process_iter():
+        cmdline = process.cmdline()
+        if "python" in cmdline and "-m" in cmdline and "--config" in cmdline:
+            prefix = cmdline[cmdline.index("--config")+1]
+            prefix = prefix + "/"
+    indir = prefix+indir
+    secretsfile = prefix+secretsfile
+    outfile = prefix+outfile
+    wwwdir = prefix+wwwdir
+else:
+    #We're not in docker
+    #So we don't need to do anything
+    pass
+
+infile = "main.yaml"
+
 resourcedir = "lovelace"
 timestamp = time.time();
 states = {}
